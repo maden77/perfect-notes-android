@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Perfect Notes</string>
+    
+    <!-- Navigation -->
+    <string name="nav_all_notes">Semua Catatan</string>
+    <string name="nav_archived">Arsip</string>
+    <string name="nav_trash">Tempat Sampah</string>
+    <string name="nav_settings">Pengaturan</string>
+    <string name="nav_backup">Backup &amp; Restore</string>
+    
+    <!-- Actions -->
+    <string name="action_search">Cari</string>
+    <string name="action_add">Tambah</string>
+    <string name="action_save">Simpan</string>
+    <string name="action_delete">Hapus</string>
+    <string name="action_cancel">Batal</string>
+    <string name="action_pin">Pin</string>
+    <string name="action_unpin">Lepas Pin</string>
+    <string name="action_archive">Arsipkan</string>
+    <string name="action_unarchive">Aktifkan</string>
+    
+    <!-- Messages -->
+    <string name="empty_notes_title">Belum Ada Catatan</string>
+    <string name="empty_notes_message">Tekan tombol + untuk membuat catatan baru</string>
+    <string name="delete_confirmation">Apakah Anda yakin ingin menghapus catatan \'%s\'?</string>
+    <string name="note_deleted">Catatan dipindahkan ke tempat sampah</string>
+    
+    <!-- Categories -->
+    <string name="category_all">Semua</string>
+    <string name="category_general">Umum</string>
+    <string name="category_work">Pekerjaan</string>
+    <string name="category_personal">Pribadi</string>
+    <string name="category_idea">Ide</string>
+</resources>
