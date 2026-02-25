@@ -1,0 +1,99 @@
+package com.example.perfectnotes.presentation.viewmodel
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.perfectnotes.domain.model.Note
+import com.example.perfectnotes.domain.repository.INoteRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    private val noteRepository: INoteRepository
+) : ViewModel() {
+    
+    private val _searchQuery = MutableStateFlow("")
+    private val _selectedCategory = MutableStateFlow("Semua")
+    private val _showArchived = MutableStateFlow(false)
+    private val _viewMode = MutableStateFlow(ViewMode.GRID)
+    
+    val notes: StateFlow<List<Note>> = combine(
+        noteRepository.getAllNotes(),
+        _searchQuery,
+        _selectedCategory,
+        _showArchived
+    ) { notes, query, category, showArchived ->
+        notes.filter { note ->
+            val matchesCategory = if (category == "Semua") true else note.category == category
+            val matchesArchive = if (showArchived) note.isArchived else !note.isArchived
+            val matchesQuery = if (query.isEmpty()) true else {
+                note.title.contains(query, ignoreCase = true) ||
+                note.content.contains(query, ignoreCase = true)
+            }
+            
+            matchesCategory && matchesArchive && matchesQuery
+        }
+    }.asStateFlow(emptyList())
+    
+    val categories: StateFlow<List<String>> = combine(
+        noteRepository.getAllCategories(),
+        _showArchived
+    ) { categories, showArchived ->
+        listOf("Semua") + categories
+    }.asStateFlow(emptyList())
+    
+    val searchQuery: StateFlow<String> = _searchQuery
+    val selectedCategory: StateFlow<String> = _selectedCategory
+    val showArchived: StateFlow<Boolean> = _showArchived
+    val viewMode: StateFlow<ViewMode> = _viewMode
+    
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
+    }
+    
+    fun setSelectedCategory(category: String) {
+        _selectedCategory.value = category
+    }
+    
+    fun toggleShowArchived() {
+        _showArchived.value = !_showArchived.value
+    }
+    
+    fun toggleViewMode() {
+        _viewMode.value = if (_viewMode.value == ViewMode.GRID) ViewMode.LIST else ViewMode.GRID
+    }
+    
+    fun togglePinNote(note: Note) {
+        viewModelScope.launch {
+            noteRepository.updateNote(note.copy(isPinned = !note.isPinned))
+        }
+    }
+    
+    fun toggleArchiveNote(note: Note) {
+        viewModelScope.launch {
+            noteRepository.updateNote(note.copy(isArchived = !note.isArchived))
+        }
+    }
+    
+    fun deleteNote(note: Note) {
+        viewModelScope.launch {
+            noteRepository.softDeleteNote(note.id)
+        }
+    }
+    
+    enum class ViewMode {
+        GRID, LIST
+    }
+    
+    private fun <T> StateFlow<T>.asStateFlow(initialValue: T): StateFlow<T> {
+        return MutableStateFlow(initialValue).also { flow ->
+            viewModelScope.launch {
+                this@asStateFlow.collect { flow.value = it }
+            }
+        }
+    }
+}
